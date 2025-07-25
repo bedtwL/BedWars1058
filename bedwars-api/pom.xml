@@ -17,13 +17,19 @@
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
+            <id>idk</id>
+            <url>https://dist.wso2.org/maven2/</url>
+        </repository>
+        <!--
+        <repository>
             <id>commons-repo</id>
             <url>https://repo.fusesource.com/nexus/content/repositories/releases-3rd-party/</url>
-        </repository>
+        </repository>-->
         <repository>
             <id>andrei-prod</id>
             <url>https://repo.andrei1058.dev/releases</url>
         </repository>
+
     </repositories>
 
     <dependencies>
@@ -31,7 +37,7 @@
         <dependency>
             <groupId>com.google.common</groupId>
             <artifactId>google-collect</artifactId>
-            <version>1.0</version>
+            <version>1.0-rc1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
