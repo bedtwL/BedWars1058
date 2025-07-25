@@ -88,6 +88,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -323,11 +324,15 @@ public class Arena implements IArena {
 
     }
     public boolean inited=false;
+    public boolean initing=false;
     /**
      * Use this method when the world was loaded successfully.
      */
     @Override
     public void init(World world) {
+        if (initing)
+            return;
+        initing=true;
         if (!autoscale) {
             if (getArenaByName(arenaName) != null) return;
         }
@@ -379,7 +384,7 @@ public class Arena implements IArena {
             }
         }
 
-        arenas.add(this);
+
 
         world.getWorldBorder().setCenter(cm.getArenaLoc("waiting.Loc"));
         world.getWorldBorder().setSize(yml.getInt("worldBorder"));
@@ -456,9 +461,16 @@ public class Arena implements IArena {
         if (p == null) return false;
         debug("Player added: " + p.getName() + " arena: " + getArenaName());
         if (!inited) {
+            init(this.getWorld());
             BedWars.getAPI().getRestoreAdapter().onEnable(this);
             plugin.getLogger().info("Loading arena: " + this.getWorldName());
-            while (inited) return addPlayer(p,skipOwnerCheck);
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    addPlayer(p,skipOwnerCheck);
+                }
+            }.runTaskLater(plugin,1L);
+            return true;
         }
         /* used for base enter/leave event */
         isOnABase.remove(p);
@@ -813,10 +825,6 @@ public class Arena implements IArena {
                     t.destroyBedHolo(p);
                 }
             }
-        }
-        else if (status==GameState.waiting) {
-            disable();
-            new Arena(this.getWorldName(),null);
         }
         List<ShopCache.CachedItem> cacheList = new ArrayList<>();
         if (ShopCache.getShopCache(p.getUniqueId()) != null) {
@@ -2420,6 +2428,7 @@ public class Arena implements IArena {
         if (!enableQueue.isEmpty()) {
             arenaByName.put(a.getArenaName(), a);
             arenaByIdentifier.put(a.getWorldName(), a);
+            arenas.add(a);
             plugin.getLogger().info("Loading arena: " + enableQueue.get(0).getWorldName());
         }
 
@@ -2432,6 +2441,7 @@ public class Arena implements IArena {
         if (enableQueue.size() == 1) {
             arenaByName.put(a.getArenaName(), a);
             arenaByIdentifier.put(a.getWorldName(), a);
+            arenas.add(a);
             plugin.getLogger().info("Loading arena: " + a.getWorldName());
         }
     }
