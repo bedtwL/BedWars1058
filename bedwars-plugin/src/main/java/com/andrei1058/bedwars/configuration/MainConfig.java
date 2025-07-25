@@ -346,7 +346,7 @@ public class MainConfig extends ConfigManager {
         //Finished old configuration conversion
 
         //set default server language
-        String whatLang = "en";
+        String whatLang = "bw";
         File[] langs = new File(plugin.getDataFolder(), "/Languages").listFiles();
         if (langs != null) {
             for (File f : langs) {
