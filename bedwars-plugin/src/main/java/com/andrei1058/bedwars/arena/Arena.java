@@ -73,6 +73,7 @@ import com.andrei1058.bedwars.support.citizens.JoinNPC;
 import com.andrei1058.bedwars.support.paper.TeleportManager;
 import com.andrei1058.bedwars.support.papi.SupportPAPI;
 import com.andrei1058.bedwars.support.vault.WithEconomy;
+import lombok.Getter;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -106,9 +107,15 @@ import static com.andrei1058.bedwars.arena.upgrades.BaseListener.isOnABase;
 public class Arena implements IArena {
 
     private static final HashMap<String, IArena> arenaByName = new HashMap<>();
+    /**
+     * -- GETTER --
+     *  Get arena by players list.
+     */
+    @Getter
     private static final HashMap<Player, IArena> arenaByPlayer = new HashMap<>();
     private static final HashMap<String, IArena> arenaByIdentifier = new HashMap<>();
     private static final LinkedList<IArena> arenas = new LinkedList<>();
+    @Getter
     private static int gamesBeforeRestart = config.getInt(ConfigPath.GENERAL_CONFIGURATION_BUNGEE_MODE_GAMES_BEFORE_RESTART);
     public static HashMap<UUID, Integer> afkCheck = new HashMap<>();
     public static HashMap<UUID, Integer> magicMilk = new HashMap<>();
@@ -126,8 +133,10 @@ public class Arena implements IArena {
     private World world;
     private String group = "Default", arenaName, worldName;
     private List<ITeam> teams = new ArrayList<>();
+    @Getter
     private LinkedList<org.bukkit.util.Vector> placed = new LinkedList<>();
     private List<String> nextEvents = new ArrayList<>();
+    @Getter
     private List<Region> regionsList = new ArrayList<>();
     private int renderDistance;
 
@@ -135,7 +144,11 @@ public class Arena implements IArena {
 
     /**
      * Current event, used at scoreboard
+     * -- GETTER --
+     *  Get next event.
+
      */
+    @Getter
     private NextEvent nextEvent = NextEvent.DIAMOND_GENERATOR_TIER_II;
     private int diamondTier = 1, emeraldTier = 1;
 
@@ -146,7 +159,11 @@ public class Arena implements IArena {
 
     /**
      * Invisibility for armor when you drink an invisibility potion
+     * -- GETTER --
+     *  Get invisibility for armor
+
      */
+    @Getter
     private ConcurrentHashMap<Player, Integer> showTime = new ConcurrentHashMap<>();
 
     /**
@@ -158,18 +175,39 @@ public class Arena implements IArena {
     private final GameStatsManager gameStats = new GameStatsManager(this);
 
 
+    /**
+     * -- GETTER --
+     *  Get instance of the starting task.
+     */
     /* ARENA TASKS */
+    @Getter
     private StartingTask startingTask = null;
+    /**
+     * -- GETTER --
+     *  Get instance of the playing task.
+     */
+    @Getter
     private PlayingTask playingTask = null;
+    /**
+     * -- GETTER --
+     *  Get instance of the game restarting task.
+     */
+    @Getter
     private RestartingTask restartingTask = null;
 
+    /**
+     * -- GETTER --
+     *  Get arena ore generators Ore Generators.
+     */
     /* ARENA GENERATORS */
+    @Getter
     private List<IGenerator> oreGenerators = new ArrayList<>();
 
     private PerMinuteTask perMinuteTask;
 
     private MoneyPerMinuteTask moneyperMinuteTask;
 
+    @Getter
     private static final LinkedList<IArena> enableQueue = new LinkedList<>();
 
     private Location respawnLocation, spectatorLocation, waitingLocation;
@@ -248,6 +286,8 @@ public class Arena implements IArena {
             String colorS = yml.getString("Team." + team + ".Color");
             if (colorS == null) continue;
             colorS = colorS.toUpperCase();
+            if (colorS.equals("GRAY"))
+                colorS="DARK_GRAY";
             try {
                 TeamColor.valueOf(colorS);
             } catch (Exception e) {
@@ -281,7 +321,7 @@ public class Arena implements IArena {
         addToEnableQueue(this);
         Language.saveIfNotExists(Messages.ARENA_DISPLAY_GROUP_PATH + getGroup().toLowerCase(), String.valueOf(getGroup().charAt(0)).toUpperCase() + group.substring(1).toLowerCase());
     }
-
+    public boolean inited=false;
     /**
      * Use this method when the world was loaded successfully.
      */
@@ -402,6 +442,7 @@ public class Arena implements IArena {
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new File("spigot.yml"));
         renderDistance = yaml.get("world-settings." + getWorldName() + ".entity-tracking-range.players") == null ?
                 yaml.getInt("world-settings.default.entity-tracking-range.players") : yaml.getInt("world-settings." + getWorldName() + ".entity-tracking-range.players");
+        inited=true;
     }
 
     /**
@@ -414,6 +455,11 @@ public class Arena implements IArena {
     public boolean addPlayer(Player p, boolean skipOwnerCheck) {
         if (p == null) return false;
         debug("Player added: " + p.getName() + " arena: " + getArenaName());
+        if (!inited) {
+            BedWars.getAPI().getRestoreAdapter().onEnable(this);
+            plugin.getLogger().info("Loading arena: " + this.getWorldName());
+            while (inited) return addPlayer(p,skipOwnerCheck);
+        }
         /* used for base enter/leave event */
         isOnABase.remove(p);
         //
@@ -768,7 +814,10 @@ public class Arena implements IArena {
                 }
             }
         }
-
+        else if (status==GameState.waiting) {
+            disable();
+            new Arena(this.getWorldName(),null);
+        }
         List<ShopCache.CachedItem> cacheList = new ArrayList<>();
         if (ShopCache.getShopCache(p.getUniqueId()) != null) {
             //noinspection ConstantConditions
@@ -2094,20 +2143,6 @@ public class Arena implements IArena {
     }
 
     /**
-     * Get arena by players list.
-     */
-    public static HashMap<Player, IArena> getArenaByPlayer() {
-        return arenaByPlayer;
-    }
-
-    /**
-     * Get next event.
-     */
-    public NextEvent getNextEvent() {
-        return nextEvent;
-    }
-
-    /**
      * Get players count for a group
      */
     public static int getPlayers(@NotNull String group) {
@@ -2173,41 +2208,6 @@ public class Arena implements IArena {
 //                sb.updateSpectator(p, collide);
 //            }
 //        }
-    }
-
-    /**
-     * Get invisibility for armor
-     */
-    public ConcurrentHashMap<Player, Integer> getShowTime() {
-        return showTime;
-    }
-
-    /**
-     * Get instance of the starting task.
-     */
-    public StartingTask getStartingTask() {
-        return startingTask;
-    }
-
-    /**
-     * Get instance of the playing task.
-     */
-    public PlayingTask getPlayingTask() {
-        return playingTask;
-    }
-
-    /**
-     * Get instance of the game restarting task.
-     */
-    public RestartingTask getRestartingTask() {
-        return restartingTask;
-    }
-
-    /**
-     * Get arena ore generators Ore Generators.
-     */
-    public List<IGenerator> getOreGenerators() {
-        return oreGenerators;
     }
 
     /**
@@ -2358,31 +2358,12 @@ public class Arena implements IArena {
     }
 
 
-    public static int getGamesBeforeRestart() {
-        return gamesBeforeRestart;
-    }
-
     public static void setGamesBeforeRestart(int gamesBeforeRestart) {
         Arena.gamesBeforeRestart = gamesBeforeRestart;
     }
 
-    public List<Region> getRegionsList() {
-        return regionsList;
-    }
-
-    public LinkedList<Vector> getPlaced() {
-        return placed;
-    }
-
-    public static LinkedList<IArena> getEnableQueue() {
-        return enableQueue;
-    }
-
+    @Getter
     private final Map<UUID, Long> fireballCooldowns = new HashMap<>();
-
-    public Map<UUID, Long> getFireballCooldowns() {
-        return fireballCooldowns;
-    }
 
     public void destroyData() {
         destroyReJoins();
@@ -2435,19 +2416,21 @@ public class Arena implements IArena {
      */
     public static void removeFromEnableQueue(IArena a) {
         enableQueue.remove(a);
+        /*
         if (!enableQueue.isEmpty()) {
             BedWars.getAPI().getRestoreAdapter().onEnable(enableQueue.get(0));
             plugin.getLogger().info("Loading arena: " + enableQueue.get(0).getWorldName());
-        }
+        }*/
     }
 
     public static void addToEnableQueue(IArena a) {
         enableQueue.add(a);
         plugin.getLogger().info("Arena " + a.getWorldName() + " was added to the enable queue.");
+        /*
         if (enableQueue.size() == 1) {
             BedWars.getAPI().getRestoreAdapter().onEnable(a);
             plugin.getLogger().info("Loading arena: " + a.getWorldName());
-        }
+        }*/
     }
 
     public int getUpgradeDiamondsCount() {

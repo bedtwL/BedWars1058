@@ -66,11 +66,11 @@ public class MainCommand extends BukkitCommand implements ParentCommand {
         instance = this;
         new CmdJoin(this, "join");
         new CmdLeave(this, "leave");
-        new CmdLang(this, "lang");
+        //new CmdLang(this, "lang");
         new CmdTeleporter(this, "teleporter");
-        if (getServerType() != ServerType.BUNGEE) {
-            new CmdGUI(this, "gui");
-        }
+        //if (getServerType() != ServerType.BUNGEE) {
+        //    new CmdGUI(this, "gui");
+        //}
         new CmdStats(this, "stats");
         new CmdStart(this, "forceStart");
         new CmdStart(this, "start");

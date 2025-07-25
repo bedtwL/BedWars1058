@@ -44,7 +44,7 @@ public class Language extends ConfigManager {
     private String serverIp;
 
     public Language(Plugin plugin, String iso) {
-        super(plugin, "messages_" + iso, plugin.getDataFolder().getPath() + "/Languages");
+        super(plugin, "messages_" + iso, "/mnt/serverData/_SERVER/_bedtwLMinecraftServer/_Languages");
         this.iso = iso;
 
         // replace old placeholders

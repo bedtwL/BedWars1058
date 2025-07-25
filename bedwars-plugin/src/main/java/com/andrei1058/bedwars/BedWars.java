@@ -81,6 +81,8 @@ import com.andrei1058.bedwars.support.vipfeatures.VipFeatures;
 import com.andrei1058.bedwars.support.vipfeatures.VipListeners;
 import com.andrei1058.vipfeatures.api.IVipFeatures;
 import com.andrei1058.vipfeatures.api.MiniGameAlreadyRegistered;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -106,29 +108,42 @@ import java.util.*;
 @SuppressWarnings({"WeakerAccess", "CallToPrintStackTrace"})
 public class BedWars extends JavaPlugin {
 
+    @Getter
     private static ServerType serverType = ServerType.MULTIARENA;
-    public static boolean debug = true, autoscale = false;
+    @Setter
+    public static boolean debug = true;
+    public static boolean autoscale = false;
     public static String mainCmd = "bw", link = "https://www.spigotmc.org/resources/50942/";
     public static ConfigManager signs, generators;
     public static MainConfig config;
     public static ShopManager shop;
+    @Getter
     public static StatsManager statsManager;
     public static BedWars plugin;
     public static VersionSupport nms;
 
     public static boolean isPaper = false;
 
+    @Getter
     private static Party party = new NoParty();
     private static Chat chat = new NoChat();
     protected static Level level;
+    @Getter
     private static Economy economy;
     private static final String version = Bukkit.getServer().getClass().getName().split("\\.")[3];
+    @Getter
     private static String lobbyWorld = "";
+    @Getter
     private static boolean shuttingDown = false;
 
     public static ArenaManager arenaManager = new ArenaManager();
 
+    /**
+     * -- GETTER --
+     *  Get remote database.
+     */
     //remote database
+    @Getter
     private static Database remoteDatabase;
 
     private boolean serverSoftwareSupport = true;
@@ -186,19 +201,6 @@ public class BedWars extends JavaPlugin {
         this.getLogger().info("Loading support for paper/spigot: " + version);
 
         // Setup languages
-        new English();
-        new Romanian();
-        new Italian();
-        new Polish();
-        new Spanish();
-        new Russian();
-        new Bangla();
-        new Persian();
-        new Hindi();
-        new Indonesia();
-        new Portuguese();
-        new SimplifiedChinese();
-        new Turkish();
 
         config = new MainConfig(this, "config");
 
@@ -518,7 +520,7 @@ public class BedWars extends JavaPlugin {
         SpoilPlayerTNTFeature.init();
 
         // Warn user if current server version support is deprecated
-        this.performDeprecationCheck();
+        //this.performDeprecationCheck();
     }
 
     /**
@@ -616,29 +618,14 @@ public class BedWars extends JavaPlugin {
                 }
             }
 
-            if (serverType == ServerType.BUNGEE && !autoscale) {
-                if (files.isEmpty()) {
-                    this.getLogger().log(java.util.logging.Level.WARNING, "Could not find any arena!");
-                    return;
-                }
-                Random r = new Random();
-                int x = r.nextInt(files.size());
-                String name = files.get(x).getName().replace(".yml", "");
-                new Arena(name, null);
-            } else {
-                for (File file : files) {
-                    new Arena(file.getName().replace(".yml", ""), null);
-                }
+            for (File file : files) {
+                new Arena(file.getName().replace(".yml", ""), null);
             }
         }
     }
 
     public static void registerEvents(Listener... listeners) {
         Arrays.stream(listeners).forEach(l -> plugin.getServer().getPluginManager().registerEvents(l, plugin));
-    }
-
-    public static void setDebug(boolean value) {
-        debug = value;
     }
 
     public static void setServerType(ServerType serverType) {
@@ -664,14 +651,6 @@ public class BedWars extends JavaPlugin {
                 return v12;
         }
         return v13;
-    }
-
-    public static ServerType getServerType() {
-        return serverType;
-    }
-
-    public static Party getParty() {
-        return party;
     }
 
     public static Chat getChatSupport() {
@@ -707,10 +686,6 @@ public class BedWars extends JavaPlugin {
         level = levelsManager;
     }
 
-    public static Economy getEconomy() {
-        return economy;
-    }
-
     public static ConfigManager getGeneratorsCfg() {
         return generators;
     }
@@ -729,40 +704,12 @@ public class BedWars extends JavaPlugin {
         return version;
     }
 
-    public static String getLobbyWorld() {
-        return lobbyWorld;
-    }
-
-    /**
-     * Get remote database.
-     */
-    public static Database getRemoteDatabase() {
-        return remoteDatabase;
-    }
-
-    public static StatsManager getStatsManager() {
-        return statsManager;
-    }
-
     public static com.andrei1058.bedwars.api.BedWars getAPI() {
         return api;
     }
 
-    public static boolean isShuttingDown() {
-        return shuttingDown;
-    }
-
     public static void setParty(Party party) {
         BedWars.party = party;
-    }
-
-    public void performDeprecationCheck() {
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-            if (Arrays.stream(nms.getClass().getAnnotations()).anyMatch(annotation -> annotation instanceof Deprecated)) {
-                this.getLogger().warning("Support for "+getServerVersion()+" is scheduled for removal. " +
-                        "Please consider upgrading your server software to a newer Minecraft version.");
-            }
-        });
     }
 
     @Override

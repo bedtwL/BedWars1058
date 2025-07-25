@@ -102,10 +102,7 @@ public class BedWarsTeam implements ITeam {
     public BedWarsTeam(String name, TeamColor color, Location spawn, Location bed, Location shop, Location teamUpgrades, Arena arena) {
         if (arena == null) return;
         this.name = name;
-        if (color==TeamColor.GRAY)
-            this.color=TeamColor.DARK_GRAY;
-        else
-            this.color = color;
+        this.color = color;
         this.spawn = spawn;
         this.bed = bed;
         this.arena = arena;
