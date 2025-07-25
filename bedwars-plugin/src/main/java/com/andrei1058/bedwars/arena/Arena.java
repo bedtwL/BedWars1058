@@ -320,6 +320,8 @@ public class Arena implements IArena {
         yKillHeight = yml.getInt(ConfigPath.ARENA_Y_LEVEL_KILL);
         addToEnableQueue(this);
         Language.saveIfNotExists(Messages.ARENA_DISPLAY_GROUP_PATH + getGroup().toLowerCase(), String.valueOf(getGroup().charAt(0)).toUpperCase() + group.substring(1).toLowerCase());
+        arenaByName.put(getArenaName(), this);
+        arenaByIdentifier.put(worldName, this);
     }
     public boolean inited=false;
     /**
@@ -379,8 +381,7 @@ public class Arena implements IArena {
         }
 
         arenas.add(this);
-        arenaByName.put(getArenaName(), this);
-        arenaByIdentifier.put(worldName, this);
+
         world.getWorldBorder().setCenter(cm.getArenaLoc("waiting.Loc"));
         world.getWorldBorder().setSize(yml.getInt("worldBorder"));
 
