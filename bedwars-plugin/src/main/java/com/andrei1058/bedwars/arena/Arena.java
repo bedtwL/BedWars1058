@@ -2416,25 +2416,24 @@ public class Arena implements IArena {
      */
     public static void removeFromEnableQueue(IArena a) {
         enableQueue.remove(a);
-        /*
+
         if (!enableQueue.isEmpty()) {
-            BedWars.getAPI().getRestoreAdapter().onEnable(enableQueue.get(0));
+            arenaByName.put(a.getArenaName(), a);
+            arenaByIdentifier.put(a.getWorldName(), a);
             plugin.getLogger().info("Loading arena: " + enableQueue.get(0).getWorldName());
-        }*/
-        arenaByName.put(a.getArenaName(), a);
-        arenaByIdentifier.put(a.getWorldName(), a);
+        }
+
     }
 
     public static void addToEnableQueue(IArena a) {
         enableQueue.add(a);
         plugin.getLogger().info("Arena " + a.getWorldName() + " was added to the enable queue.");
-        /*
+
         if (enableQueue.size() == 1) {
-            BedWars.getAPI().getRestoreAdapter().onEnable(a);
+            arenaByName.put(a.getArenaName(), a);
+            arenaByIdentifier.put(a.getWorldName(), a);
             plugin.getLogger().info("Loading arena: " + a.getWorldName());
-        }*/
-        arenaByName.put(a.getArenaName(), a);
-        arenaByIdentifier.put(a.getWorldName(), a);
+        }
     }
 
     public int getUpgradeDiamondsCount() {
