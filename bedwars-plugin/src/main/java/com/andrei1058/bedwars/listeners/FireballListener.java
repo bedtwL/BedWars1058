@@ -1,7 +1,5 @@
 package com.andrei1058.bedwars.listeners;
 
-import com.andrei1058.bedwars.api.arena.IArena;
-import com.andrei1058.bedwars.api.configuration.ConfigPath;
 import com.andrei1058.bedwars.arena.Arena;
 import com.andrei1058.bedwars.arena.LastHit;
 import org.bukkit.Location;
@@ -11,7 +9,9 @@ import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.projectiles.ProjectileSource;
@@ -19,31 +19,9 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
-import static com.andrei1058.bedwars.BedWars.config;
 import static com.andrei1058.bedwars.BedWars.getAPI;
 
 public class FireballListener implements Listener {
-
-    private final double fireballExplosionSize;
-    private final boolean fireballMakeFire;
-    private final double fireballHorizontal;
-    private final double fireballVertical;
-
-    private final double damageSelf;
-    private final double damageEnemy;
-    private final double damageTeammates;
-
-    public FireballListener() {
-        this.fireballExplosionSize = config.getYml().getDouble(ConfigPath.GENERAL_FIREBALL_EXPLOSION_SIZE);
-        this.fireballMakeFire = config.getYml().getBoolean(ConfigPath.GENERAL_FIREBALL_MAKE_FIRE);
-        this.fireballHorizontal = config.getYml().getDouble(ConfigPath.GENERAL_FIREBALL_KNOCKBACK_HORIZONTAL) * -1;
-        this.fireballVertical = config.getYml().getDouble(ConfigPath.GENERAL_FIREBALL_KNOCKBACK_VERTICAL);
-
-        this.damageSelf = config.getYml().getDouble(ConfigPath.GENERAL_FIREBALL_DAMAGE_SELF);
-        this.damageEnemy = config.getYml().getDouble(ConfigPath.GENERAL_FIREBALL_DAMAGE_ENEMY);
-        this.damageTeammates = config.getYml().getDouble(ConfigPath.GENERAL_FIREBALL_DAMAGE_TEAMMATES);
-    }
-
     @EventHandler
     public void fireballHit(ProjectileHitEvent e) {
         if(!(e.getEntity() instanceof Fireball)) return;
@@ -53,23 +31,40 @@ public class FireballListener implements Listener {
         if(!(projectileSource instanceof Player)) return;
         Player source = (Player) projectileSource;
 
-        IArena arena = Arena.getArenaByPlayer(source);
-
         Vector vector = location.toVector();
 
         World world = location.getWorld();
 
         assert world != null;
+
+        double fireballExplosionSize = 3;
         Collection<Entity> nearbyEntities = world
                 .getNearbyEntities(location, fireballExplosionSize, fireballExplosionSize, fireballExplosionSize);
         for(Entity entity : nearbyEntities) {
             if(!(entity instanceof Player)) continue;
             Player player = (Player) entity;
-            if(!getAPI().getArenaUtil().isPlaying(player)) continue;
+            if(!getAPI().getArenaUtil().isPlaying(player)&&!player.hasPermission("bedtwl.bypass.fb.gamemode")) continue;
 
 
             Vector playerVector = player.getLocation().toVector();
             Vector normalizedVector = vector.subtract(playerVector).normalize();
+            double fireballHorizontal = -1.0;
+            Vector horizontalVector = normalizedVector.multiply(fireballHorizontal);
+            double fireballVertical = 1.5;
+            double y = 0.65 * fireballVertical * 1.5;
+            player.setVelocity(horizontalVector.setY(y));
+            if (source.getUniqueId()!=player.getUniqueId())
+                player.setLastDamageCause(new EntityDamageByEntityEvent(source, player, EntityDamageEvent.DamageCause.ENTITY_EXPLOSION, 1.0));
+            if (player.equals(source)) {
+                if (source.getUniqueId()==player.getUniqueId())
+                    player.damage(2.0);
+                else
+                    player.damage(2.0,source);
+            }
+            /*
+
+            Original Code:
+
             Vector horizontalVector = normalizedVector.multiply(fireballHorizontal);
             double y = normalizedVector.getY();
             if(y < 0 ) y += 1.5;
@@ -79,7 +74,7 @@ public class FireballListener implements Listener {
                 y = y*fireballVertical*1.5; // kb for jumping
             }
             player.setVelocity(horizontalVector.setY(y));
-
+            */
             LastHit lh = LastHit.getLastHit(player);
             if (lh != null) {
                 lh.setDamager(source);
@@ -89,17 +84,9 @@ public class FireballListener implements Listener {
             }
 
             if(player.equals(source)) {
-                if(damageSelf > 0) {
-                    player.damage(damageSelf); // damage shooter
-                }
-            } else if(arena.getTeam(player).equals(arena.getTeam(source))) {
-                if(damageTeammates > 0) {
-                    player.damage(damageTeammates); // damage teammates
-                }
+                player.damage(2.0);
             } else {
-                if(damageEnemy > 0) {
-                    player.damage(damageEnemy); // damage enemies
-                }
+                player.damage(2.0);
             }
         }
     }
@@ -123,8 +110,13 @@ public class FireballListener implements Listener {
         Player player = (Player) shooter;
 
         if(Arena.getArenaByPlayer(player) == null) return;
-
-        e.setFire(fireballMakeFire);
+        e.setFire(true);
     }
-
+    @EventHandler
+    public void onBlockIgnite(BlockIgniteEvent e) {
+        BlockIgniteEvent.IgniteCause cause = e.getCause();
+        if (cause == BlockIgniteEvent.IgniteCause.SPREAD || cause == BlockIgniteEvent.IgniteCause.LAVA || cause == BlockIgniteEvent.IgniteCause.LIGHTNING) {
+            e.setCancelled(true);
+        }
+    }
 }
