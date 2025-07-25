@@ -20,6 +20,7 @@
 
 package com.andrei1058.bedwars.commands.party;
 
+import com.andrei1058.bedwars.BedWars;
 import com.andrei1058.bedwars.api.language.Messages;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -32,7 +33,6 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.UUID;
 
-import static com.andrei1058.bedwars.BedWars.getParty;
 import static com.andrei1058.bedwars.api.language.Language.getList;
 import static com.andrei1058.bedwars.api.language.Language.getMsg;
 
@@ -59,7 +59,7 @@ public class PartyCommand extends BukkitCommand {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INVITE_USAGE));
                     return true;
                 }
-                if (getParty().hasParty(p) && !getParty().isOwner(p)) {
+                if (BedWars.getParty().hasParty(p) && !BedWars.getParty().isOwner(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INSUFFICIENT_PERMISSIONS));
                     return true;
                 }
@@ -85,7 +85,7 @@ public class PartyCommand extends BukkitCommand {
                 if (args.length < 2) {
                     return true;
                 }
-                if (getParty().hasParty(p)) {
+                if (BedWars.getParty().hasParty(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_ACCEPT_DENIED_ALREADY_IN_PARTY));
                     return true;
                 }
@@ -99,14 +99,14 @@ public class PartyCommand extends BukkitCommand {
                 }
                 if (partySessionRequest.get(Bukkit.getPlayer(args[1]).getUniqueId()).equals(p.getUniqueId())) {
                     partySessionRequest.remove(Bukkit.getPlayer(args[1]).getUniqueId());
-                    if (getParty().hasParty(Bukkit.getPlayer(args[1]))) {
-                        getParty().addMember(Bukkit.getPlayer(args[1]), p);
-                        for (Player on : getParty().getMembers(Bukkit.getPlayer(args[1]))) {
+                    if (BedWars.getParty().hasParty(Bukkit.getPlayer(args[1]))) {
+                        BedWars.getParty().addMember(Bukkit.getPlayer(args[1]), p);
+                        for (Player on : BedWars.getParty().getMembers(Bukkit.getPlayer(args[1]))) {
                             on.sendMessage(getMsg(p, Messages.COMMAND_PARTY_ACCEPT_SUCCESS).replace("{playername}", p.getName()).replace("{player}", p.getDisplayName()));
                         }
                     } else {
-                        getParty().createParty(Bukkit.getPlayer(args[1]), p);
-                        for (Player on : getParty().getMembers(Bukkit.getPlayer(args[1]))) {
+                        BedWars.getParty().createParty(Bukkit.getPlayer(args[1]), p);
+                        for (Player on : BedWars.getParty().getMembers(Bukkit.getPlayer(args[1]))) {
                             on.sendMessage(getMsg(p, Messages.COMMAND_PARTY_ACCEPT_SUCCESS).replace("{playername}", p.getName()).replace("{player}", p.getDisplayName()));
                         }
                     }
@@ -115,33 +115,33 @@ public class PartyCommand extends BukkitCommand {
                 }
                 break;
             case "leave":
-                if (!getParty().hasParty(p)) {
+                if (!BedWars.getParty().hasParty(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_GENERAL_DENIED_NOT_IN_PARTY));
                     return true;
                 }
-                if (getParty().isOwner(p)) {
+                if (BedWars.getParty().isOwner(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_LEAVE_DENIED_IS_OWNER_NEEDS_DISBAND));
                     return true;
                 }
-                getParty().removeFromParty(p);
+                BedWars.getParty().removeFromParty(p);
                 break;
             case "disband":
-                if (!getParty().hasParty(p)) {
+                if (!BedWars.getParty().hasParty(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_GENERAL_DENIED_NOT_IN_PARTY));
                     return true;
                 }
-                if (!getParty().isOwner(p)) {
+                if (!BedWars.getParty().isOwner(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INSUFFICIENT_PERMISSIONS));
                     return true;
                 }
-                getParty().disband(p);
+                BedWars.getParty().disband(p);
                 break;
             case "remove":
                 if (args.length == 1) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_REMOVE_USAGE));
                     return true;
                 }
-                if (getParty().hasParty(p) && !getParty().isOwner(p)) {
+                if (BedWars.getParty().hasParty(p) && !BedWars.getParty().isOwner(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INSUFFICIENT_PERMISSIONS));
                     return true;
                 }
@@ -150,17 +150,17 @@ public class PartyCommand extends BukkitCommand {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_REMOVE_DENIED_TARGET_NOT_PARTY_MEMBER).replace("{player}", args[1]));
                     return true;
                 }
-                if (!getParty().isMember(p, target)) {
+                if (!BedWars.getParty().isMember(p, target)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_REMOVE_DENIED_TARGET_NOT_PARTY_MEMBER).replace("{player}", args[1]));
                     return true;
                 }
-                getParty().removePlayer(p, target);
+                BedWars.getParty().removePlayer(p, target);
                 break;
             case "promote":
-                if (!getParty().hasParty(p)) {
+                if (!BedWars.getParty().hasParty(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_GENERAL_DENIED_NOT_IN_PARTY));
                     return true;
-                } else if (!getParty().isOwner(p)) {
+                } else if (!BedWars.getParty().isOwner(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INSUFFICIENT_PERMISSIONS));
                     return true;
                 }
@@ -169,12 +169,12 @@ public class PartyCommand extends BukkitCommand {
                     return true;
                 }
                 Player target1 = Bukkit.getPlayer(args[1]);
-                if (!getParty().isMember(p, target1)) {
+                if (!BedWars.getParty().isMember(p, target1)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_REMOVE_DENIED_TARGET_NOT_PARTY_MEMBER).replace("{player}", args[1]));
                     return true;
                 }
-                getParty().promote(p, target1);
-                for (Player p1 : getParty().getMembers(p)) {
+                BedWars.getParty().promote(p, target1);
+                for (Player p1 : BedWars.getParty().getMembers(p)) {
                     if (p1.equals(p)) {
                         p1.sendMessage(getMsg(p1, Messages.COMMAND_PARTY_PROMOTE_SUCCESS).replace("{player}", args[1]));
                     } else if (p1.equals(target1)) {
@@ -186,14 +186,14 @@ public class PartyCommand extends BukkitCommand {
                 break;
             case "info" :
             case "list":
-                if (!getParty().hasParty(p)) {
+                if (!BedWars.getParty().hasParty(p)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_GENERAL_DENIED_NOT_IN_PARTY));
                     return true;
                 }
-                Player owner = getParty().getOwner(p);
+                Player owner = BedWars.getParty().getOwner(p);
                 p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INFO_OWNER).replace("{owner}", owner.getName()));
                 p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INFO_PLAYERS));
-                for (Player p1 : getParty().getMembers(owner)) {
+                for (Player p1 : BedWars.getParty().getMembers(owner)) {
                     p.sendMessage(getMsg(p, Messages.COMMAND_PARTY_INFO_PLAYER).replace("{player}", p1.getName()));
                 }
                 break;
