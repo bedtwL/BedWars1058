@@ -465,12 +465,12 @@ public class Arena implements IArena {
     public boolean addPlayer(Player p, boolean skipOwnerCheck) {
         if (p == null) return false;
         debug("Player added: " + p.getName() + " arena: " + getArenaName());
-        if (!inited) {
+        /*if (!inited) {
             BedWars.getAPI().getRestoreAdapter().onEnable(this);
             //init(this.getWorld());
             plugin.getLogger().info("fucking arena: " + this.getWorldName());
             return false;
-        }
+        }*/
         /* used for base enter/leave event */
         isOnABase.remove(p);
         //
