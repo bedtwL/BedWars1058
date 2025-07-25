@@ -217,6 +217,7 @@ public class BwSidebar implements ISidebar {
                     .replace("{poweredBy}", BedWars.config.getString(ConfigPath.GENERAL_CONFIG_PLACEHOLDERS_REPLACEMENTS_POWERED_BY))
                     .replace("{version}", plugin.getDescription().getVersion())
                     .replace("{server}", config.getString(ConfigPath.GENERAL_CONFIGURATION_BUNGEE_OPTION_SERVER_ID))
+                    .replace("%SpecialCode%","")
             ;
 
             // Add the line to the sidebar
