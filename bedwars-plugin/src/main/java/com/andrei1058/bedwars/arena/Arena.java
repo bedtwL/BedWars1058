@@ -225,6 +225,7 @@ public class Arena implements IArena {
      * @param p    - This will send messages to the player if something went wrong while loading the arena. Can be NULL.
      */
     public Arena(String name, Player p) {
+        inited=false;
         if (!autoscale) {
             for (IArena mm : enableQueue) {
                 if (mm.getArenaName().equalsIgnoreCase(name)) {
@@ -323,21 +324,20 @@ public class Arena implements IArena {
 
     }
 
-    public boolean inited = false;
-    public boolean initing = false;
+    public boolean inited;
+    //public boolean initing = false;
 
     /**
      * Use this method when the world was loaded successfully.
      */
     @Override
     public void init(World world) {
-        if (initing)
+        /*if (initing)
             return;
         initing = true;
+        */
         if (!autoscale) {
-            if (getArenaByName(arenaName) != null)
-                inited=true;
-            return;
+            if (getArenaByName(arenaName) != null) return;
         }
         removeFromEnableQueue(this);
         debug("Initialized arena " + getArenaName() + " with map " + world.getName());
@@ -444,6 +444,7 @@ public class Arena implements IArena {
                 "Default." + ConfigPath.GENERATOR_DIAMOND_TIER_II_START : getGroup() + "." + ConfigPath.GENERATOR_DIAMOND_TIER_II_START);
         upgradeEmeraldsCount = getGeneratorsCfg().getInt(getGeneratorsCfg().getYml().get(getGroup() + "." + ConfigPath.GENERATOR_EMERALD_TIER_II_START) == null ?
                 "Default." + ConfigPath.GENERATOR_EMERALD_TIER_II_START : getGroup() + "." + ConfigPath.GENERATOR_EMERALD_TIER_II_START);
+        inited = true;
         plugin.getLogger().info("Load done: " + getArenaName());
 
 
@@ -451,7 +452,7 @@ public class Arena implements IArena {
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new File("spigot.yml"));
         renderDistance = yaml.get("world-settings." + getWorldName() + ".entity-tracking-range.players") == null ?
                 yaml.getInt("world-settings.default.entity-tracking-range.players") : yaml.getInt("world-settings." + getWorldName() + ".entity-tracking-range.players");
-        inited = true;
+
     }
 
     /**
@@ -466,7 +467,7 @@ public class Arena implements IArena {
         debug("Player added: " + p.getName() + " arena: " + getArenaName());
         if (!inited) {
             BedWars.getAPI().getRestoreAdapter().onEnable(this);
-            init(this.getWorld());
+            //init(this.getWorld());
             plugin.getLogger().info("fucking arena: " + this.getWorldName());
             return false;
         }
@@ -2423,9 +2424,9 @@ public class Arena implements IArena {
     public static void removeFromEnableQueue(IArena a) {
         enableQueue.remove(a);
         if (!enableQueue.isEmpty()) {
+            //arenas.add(enableQueue.get(0));
             //arenaByName.put(a.getArenaName(), enableQueue.get(0));
             //arenaByIdentifier.put(a.getWorldName(), enableQueue.get(0));
-            //arenas.add(enableQueue.get(0));
             BedWars.getAPI().getRestoreAdapter().onEnable(enableQueue.get(0));
             plugin.getLogger().info("Loading arena: " + enableQueue.get(0).getWorldName());
         }
@@ -2435,9 +2436,9 @@ public class Arena implements IArena {
         enableQueue.add(a);
 
         if (enableQueue.size() == 1) {
+            //arenas.add(a);
             //arenaByName.put(a.getArenaName(), a);
             //arenaByIdentifier.put(a.getWorldName(), a);
-            //arenas.add(a);
             BedWars.getAPI().getRestoreAdapter().onEnable(a);
             //removeFromEnableQueue(a);
             plugin.getLogger().info("Loading arena: " + a.getWorldName());
