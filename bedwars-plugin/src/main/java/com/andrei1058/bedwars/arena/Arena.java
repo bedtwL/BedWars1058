@@ -320,8 +320,7 @@ public class Arena implements IArena {
         yKillHeight = yml.getInt(ConfigPath.ARENA_Y_LEVEL_KILL);
         addToEnableQueue(this);
         Language.saveIfNotExists(Messages.ARENA_DISPLAY_GROUP_PATH + getGroup().toLowerCase(), String.valueOf(getGroup().charAt(0)).toUpperCase() + group.substring(1).toLowerCase());
-        arenaByName.put(getArenaName(), this);
-        arenaByIdentifier.put(worldName, this);
+
     }
     public boolean inited=false;
     /**
@@ -2422,6 +2421,8 @@ public class Arena implements IArena {
             BedWars.getAPI().getRestoreAdapter().onEnable(enableQueue.get(0));
             plugin.getLogger().info("Loading arena: " + enableQueue.get(0).getWorldName());
         }*/
+        arenaByName.put(a.getArenaName(), a);
+        arenaByIdentifier.put(a.getWorldName(), a);
     }
 
     public static void addToEnableQueue(IArena a) {
@@ -2432,6 +2433,8 @@ public class Arena implements IArena {
             BedWars.getAPI().getRestoreAdapter().onEnable(a);
             plugin.getLogger().info("Loading arena: " + a.getWorldName());
         }*/
+        arenaByName.put(a.getArenaName(), a);
+        arenaByIdentifier.put(a.getWorldName(), a);
     }
 
     public int getUpgradeDiamondsCount() {
