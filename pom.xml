@@ -95,7 +95,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <directory>${env.PLUGIN_REPO}\bw</directory>
     </build>
     <modules>
         <module>bedwars-plugin</module>

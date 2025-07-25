@@ -110,7 +110,7 @@ public class Arena implements IArena {
     private static final HashMap<String, IArena> arenaByName = new HashMap<>();
     /**
      * -- GETTER --
-     *  Get arena by players list.
+     * Get arena by players list.
      */
     @Getter
     private static final HashMap<Player, IArena> arenaByPlayer = new HashMap<>();
@@ -146,8 +146,7 @@ public class Arena implements IArena {
     /**
      * Current event, used at scoreboard
      * -- GETTER --
-     *  Get next event.
-
+     * Get next event.
      */
     @Getter
     private NextEvent nextEvent = NextEvent.DIAMOND_GENERATOR_TIER_II;
@@ -161,8 +160,7 @@ public class Arena implements IArena {
     /**
      * Invisibility for armor when you drink an invisibility potion
      * -- GETTER --
-     *  Get invisibility for armor
-
+     * Get invisibility for armor
      */
     @Getter
     private ConcurrentHashMap<Player, Integer> showTime = new ConcurrentHashMap<>();
@@ -178,27 +176,27 @@ public class Arena implements IArena {
 
     /**
      * -- GETTER --
-     *  Get instance of the starting task.
+     * Get instance of the starting task.
      */
     /* ARENA TASKS */
     @Getter
     private StartingTask startingTask = null;
     /**
      * -- GETTER --
-     *  Get instance of the playing task.
+     * Get instance of the playing task.
      */
     @Getter
     private PlayingTask playingTask = null;
     /**
      * -- GETTER --
-     *  Get instance of the game restarting task.
+     * Get instance of the game restarting task.
      */
     @Getter
     private RestartingTask restartingTask = null;
 
     /**
      * -- GETTER --
-     *  Get arena ore generators Ore Generators.
+     * Get arena ore generators Ore Generators.
      */
     /* ARENA GENERATORS */
     @Getter
@@ -288,7 +286,7 @@ public class Arena implements IArena {
             if (colorS == null) continue;
             colorS = colorS.toUpperCase();
             if (colorS.equals("GRAY"))
-                colorS="DARK_GRAY";
+                colorS = "DARK_GRAY";
             try {
                 TeamColor.valueOf(colorS);
             } catch (Exception e) {
@@ -320,11 +318,14 @@ public class Arena implements IArena {
         if (error) return;
         yKillHeight = yml.getInt(ConfigPath.ARENA_Y_LEVEL_KILL);
         addToEnableQueue(this);
+        //removeFromEnableQueue(this);
         Language.saveIfNotExists(Messages.ARENA_DISPLAY_GROUP_PATH + getGroup().toLowerCase(), String.valueOf(getGroup().charAt(0)).toUpperCase() + group.substring(1).toLowerCase());
 
     }
-    public boolean inited=false;
-    public boolean initing=false;
+
+    public boolean inited = false;
+    public boolean initing = false;
+
     /**
      * Use this method when the world was loaded successfully.
      */
@@ -332,9 +333,11 @@ public class Arena implements IArena {
     public void init(World world) {
         if (initing)
             return;
-        initing=true;
+        initing = true;
         if (!autoscale) {
-            if (getArenaByName(arenaName) != null) return;
+            if (getArenaByName(arenaName) != null)
+                inited=true;
+            return;
         }
         removeFromEnableQueue(this);
         debug("Initialized arena " + getArenaName() + " with map " + world.getName());
@@ -385,10 +388,11 @@ public class Arena implements IArena {
         }
 
 
-
         world.getWorldBorder().setCenter(cm.getArenaLoc("waiting.Loc"));
         world.getWorldBorder().setSize(yml.getInt("worldBorder"));
-
+        arenas.add(this);
+        arenaByName.put(getArenaName(), this);
+        arenaByIdentifier.put(worldName, this);
         /* Check if lobby removal is set */
         if (!getConfig().getYml().isSet(ConfigPath.ARENA_WAITING_POS1) && getConfig().getYml().isSet(ConfigPath.ARENA_WAITING_POS2)) {
             plugin.getLogger().severe("Lobby Pos1 isn't set! The arena's lobby won't be removed!");
@@ -447,7 +451,7 @@ public class Arena implements IArena {
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new File("spigot.yml"));
         renderDistance = yaml.get("world-settings." + getWorldName() + ".entity-tracking-range.players") == null ?
                 yaml.getInt("world-settings.default.entity-tracking-range.players") : yaml.getInt("world-settings." + getWorldName() + ".entity-tracking-range.players");
-        inited=true;
+        inited = true;
     }
 
     /**
@@ -461,16 +465,10 @@ public class Arena implements IArena {
         if (p == null) return false;
         debug("Player added: " + p.getName() + " arena: " + getArenaName());
         if (!inited) {
-            init(this.getWorld());
             BedWars.getAPI().getRestoreAdapter().onEnable(this);
-            plugin.getLogger().info("Loading arena: " + this.getWorldName());
-            new BukkitRunnable(){
-                @Override
-                public void run() {
-                    addPlayer(p,skipOwnerCheck);
-                }
-            }.runTaskLater(plugin,1L);
-            return true;
+            init(this.getWorld());
+            plugin.getLogger().info("fucking arena: " + this.getWorldName());
+            return false;
         }
         /* used for base enter/leave event */
         isOnABase.remove(p);
@@ -2424,26 +2422,27 @@ public class Arena implements IArena {
      */
     public static void removeFromEnableQueue(IArena a) {
         enableQueue.remove(a);
-
         if (!enableQueue.isEmpty()) {
-            arenaByName.put(a.getArenaName(), a);
-            arenaByIdentifier.put(a.getWorldName(), a);
-            arenas.add(a);
+            //arenaByName.put(a.getArenaName(), enableQueue.get(0));
+            //arenaByIdentifier.put(a.getWorldName(), enableQueue.get(0));
+            //arenas.add(enableQueue.get(0));
+            BedWars.getAPI().getRestoreAdapter().onEnable(enableQueue.get(0));
             plugin.getLogger().info("Loading arena: " + enableQueue.get(0).getWorldName());
         }
-
     }
 
     public static void addToEnableQueue(IArena a) {
         enableQueue.add(a);
-        plugin.getLogger().info("Arena " + a.getWorldName() + " was added to the enable queue.");
 
         if (enableQueue.size() == 1) {
-            arenaByName.put(a.getArenaName(), a);
-            arenaByIdentifier.put(a.getWorldName(), a);
-            arenas.add(a);
+            //arenaByName.put(a.getArenaName(), a);
+            //arenaByIdentifier.put(a.getWorldName(), a);
+            //arenas.add(a);
+            BedWars.getAPI().getRestoreAdapter().onEnable(a);
+            //removeFromEnableQueue(a);
             plugin.getLogger().info("Loading arena: " + a.getWorldName());
         }
+
     }
 
     public int getUpgradeDiamondsCount() {
@@ -2619,7 +2618,7 @@ public class Arena implements IArena {
     public ITeamAssigner getTeamAssigner() {
         return teamAssigner;
     }
-        
+
     @Override
     public int getDiamondTier() {
         return diamondTier;
